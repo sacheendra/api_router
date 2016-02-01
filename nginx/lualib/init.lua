@@ -11,7 +11,8 @@ local readResolvConf = function()
 		line = f:read()
 		if line == nil then break end
 
-		local sp = ssplit.split(line, "%S+")
+		local sp = ssplit.split(line)
+
 		if sp[1] == "search" then
 			search_domain = sp[2]
 		elseif sp[1] == "nameserver" then

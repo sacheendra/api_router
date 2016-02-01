@@ -44,17 +44,23 @@ local resolveURL = function(target_url)
 		}
 
 		if not r then
-			ngx.say("failed to instantiate the DNS resolver: ", err)
+			ngx.log(ngx.ERR, "failed to instantiate the DNS resolver: ", err)
 			return
 		end
 
 		local answers, err = r:query(target_url)
 		if not answers then
-			ngx.say("failed to query the DNS server: ", err)
+			ngx.log(ngx.ERR, "failed to query the DNS server: ", err)
 			return
 		end
 
-		address = answers.address
+		local count = 0
+		for _,answer in pairs(answers) do
+			if answer["address"] then
+				address = answer["address"]
+				break
+			end
+		end
 	else
 		address = target_url
 	end
