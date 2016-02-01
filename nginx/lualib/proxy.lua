@@ -13,15 +13,15 @@ local getURLAndPort = function()
 	local target_port
 	if isWebsocket() then
 		ngx.req.set_uri("/")
-		target_url_port = pushpin_servers.get_upstream(sp[1])
+		target_url_port = upstream_servers.get(sp[1], "pushpin")
 	elseif #sp == 1 then
-		target_url_port = frontend_servers.get_upstream(sp[1])
+		target_url_port = upstream_servers.get(sp[1], "frontend")
 	elseif ngx.var.arg_stream == "true" or ngx.var.arg_streamonly == "true"  then
-		target_url_port = pushpin_servers.get_upstream(sp[1])
+		target_url_port = upstream_servers.get(sp[1], "pushpin")
 	elseif #sp >= 3 then
-		target_url_port = frontend_servers.get_upstream(sp[1]..sp[2]..sp[3])
+		target_url_port = upstream_servers.get(sp[1]..sp[2]..sp[3], "frontend")
 	else
-		target_url_port = frontend_servers.get_upstream(sp[1])
+		target_url_port = upstream_servers.get(sp[1], "frontend")
 	end
 
 	local sp = ssplit.split(target_url_port, ":")
