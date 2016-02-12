@@ -1,5 +1,14 @@
 ssplit = require "ssplit"
 
+local mapStrToInt = function (source, maxint)
+	local hash = ngx.md5(source)
+	local hashNumber = tonumber(hash:sub(31-8, 31-1), 16)
+	return (hashNumber % maxint) + 1
+end
+
+ngx.log(ngx.WARN, mapStrToInt("temp1", 2))
+ngx.log(ngx.WARN, mapStrToInt("es2temp1", 2))
+
 local readResolvConf = function()
 	local f = assert(io.open("/etc/resolv.conf", "r"))
 
@@ -44,9 +53,9 @@ local getRouter = function(env_var_name, search_domain)
 	local config = cjson.decode(env_var)
 
 	local num_groups = 0
-	for group_name, group in pairs(config) do
+	for _, group in pairs(config) do
 		num_groups = num_groups + 1
-		for subgroup_name, subgroup in pairs(group) do
+		for _, subgroup in pairs(group) do
 			for i, server in ipairs(subgroup) do
 				subgroup[i] = addSearchDomain(subgroup[i], search_domain)
 			end
@@ -62,18 +71,17 @@ local getRouter = function(env_var_name, search_domain)
 
 		function router.get (key, subgroup_name)
 			local subgroup = lone_group[subgroup_name]
-			return subgroup[math.random(#subgroup)]
+			return subgroup[1]
 		end
 	else
-		local ring = require "chash"
-		for group_name, group in pairs(config) do
-			ring.add_upstream(group_name)
-		end
-
 		function router.get (key, subgroup_name)
-			local group_name = ring.get_upstream(key)
-			local subgroup = config[group_name][subgroup_name]
-			return subgroup[math.random(#subgroup)]
+			if key == "" then
+				return config[math.random(#config)][subgroup_name][1]
+			else
+				local index = mapStrToInt(key, num_groups)
+				local subgroup = config[index][subgroup_name]
+				return subgroup[1]
+			end
 		end
 	end
 

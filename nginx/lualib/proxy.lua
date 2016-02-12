@@ -7,21 +7,23 @@ end
 
 local getURLAndPort = function()
 	local sp = ssplit.split(ngx.var.uri, "/")
+	--ngx.log(ngx.WARN, ngx.var.uri)
+	--ngx.log(ngx.WARN, #sp, " O ", sp[1], " a ", sp[2], " b ", sp[3], " c ", sp[4])
 
 	local target_url_port
 	local target_url
 	local target_port
 	if isWebsocket() then
 		ngx.req.set_uri("/")
-		target_url_port = upstream_servers.get(sp[1], "pushpin")
-	elseif #sp == 1 then
-		target_url_port = upstream_servers.get(sp[1], "frontend")
+		target_url_port = upstream_servers.get(sp[2], "pushpin")
+	elseif #sp <= 2 then
+		target_url_port = upstream_servers.get("", "frontend")
 	elseif ngx.var.arg_stream == "true" or ngx.var.arg_streamonly == "true"  then
-		target_url_port = upstream_servers.get(sp[1], "pushpin")
-	elseif #sp >= 3 then
-		target_url_port = upstream_servers.get(sp[1]..sp[2]..sp[3], "frontend")
+		target_url_port = upstream_servers.get(sp[2], "pushpin")
+	elseif #sp >= 4 then
+		target_url_port = upstream_servers.get(sp[2]..sp[3]..sp[4], "frontend")
 	else
-		target_url_port = upstream_servers.get(sp[1], "frontend")
+		target_url_port = upstream_servers.get("", "frontend")
 	end
 
 	local sp = ssplit.split(target_url_port, ":")
@@ -55,7 +57,7 @@ local resolveURL = function(target_url)
 		end
 
 		local count = 0
-		for _,answer in pairs(answers) do
+		for a,answer in pairs(answers) do
 			if answer["address"] then
 				address = answer["address"]
 				break
