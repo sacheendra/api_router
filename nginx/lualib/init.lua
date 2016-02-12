@@ -6,9 +6,6 @@ local mapStrToInt = function (source, maxint)
 	return (hashNumber % maxint) + 1
 end
 
-ngx.log(ngx.WARN, mapStrToInt("temp1", 2))
-ngx.log(ngx.WARN, mapStrToInt("es2temp1", 2))
-
 local readResolvConf = function()
 	local f = assert(io.open("/etc/resolv.conf", "r"))
 
